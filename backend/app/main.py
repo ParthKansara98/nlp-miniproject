@@ -8,14 +8,14 @@ from pydantic import BaseModel
 from contextlib import asynccontextmanager
 
 # Set up logging with UTF-8 encoding to handle Unicode characters properly
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler("app.log", encoding='utf-8'),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format="%(asctime)s - %(levelname)s - %(message)s",
+#     handlers=[
+#         logging.FileHandler("app.log", encoding='utf-8'),
+#         logging.StreamHandler(sys.stdout)
+#     ]
+# )
 logger = logging.getLogger(__name__)
 
 # Embedded translation service
