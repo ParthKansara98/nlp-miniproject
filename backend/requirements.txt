@@ -2,18 +2,15 @@
 fastapi
 uvicorn[standard]
 
-# Machine Learning & NLP
-transformers
-torch
-newspaper3k
-langdetect
+# HTML Parsing (needed for news extraction)
+beautifulsoup4
+lxml
 
-# Database & Storage
-sqlite3
+# Language Detection (lightweight)
+langdetect
 
 # HTTP & Web
 requests
-httpx
 
 # CORS and Security
 python-multipart
@@ -21,13 +18,18 @@ python-multipart
 # Environment & Configuration
 python-dotenv
 
-# Data Processing
-pandas
-numpy
-
 # Logging
 python-json-logger
 
-# Testing (optional)
-pytest
-pytest-asyncio
+# Additional utilities for text processing
+python-dateutil
+
+# Translation (optional - fallback to offline method if fails)
+deep-translator
+
+# Note: Heavy ML packages removed for deployment stability
+# transformers
+# torch 
+# newspaper3k
+# pandas
+# numpy

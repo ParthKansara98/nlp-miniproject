@@ -9,12 +9,6 @@ const Navigation = () => {
       name: 'Translator',
       icon: <Globe className="w-5 h-5" />,
       description: 'Translate & Summarize'
-    },
-    {
-      path: '/dashboard',
-      name: 'Dashboard',
-      icon: <BarChart3 className="w-5 h-5" />,
-      description: 'Statistics & Reports'
     }
   ];
 

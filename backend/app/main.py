@@ -21,59 +21,168 @@ logger = logging.getLogger(__name__)
 # Embedded translation service
 class Translator:
     def __init__(self):
+        # Try to initialize online translator first
+        self.gt = None
         try:
             from deep_translator import GoogleTranslator
             self.gt = GoogleTranslator(source='gu', target='en')
-            logger.info("Translation service: OK")
+            logger.info("Translation service: OK (online)")
         except Exception as e:
-            logger.error(f"Translation service: FAILED - {e}")
-            self.gt = None
+            logger.warning(f"Online translator failed: {e}, using offline method")
+        
+        # Simple character mapping for basic Gujarati to English transliteration
+        self.gujarati_to_english = {
+            'અ': 'a', 'આ': 'aa', 'ઇ': 'i', 'ઈ': 'ii', 'ઉ': 'u', 'ઊ': 'uu',
+            'એ': 'e', 'ઐ': 'ai', 'ઓ': 'o', 'ઔ': 'au',
+            'ક': 'ka', 'ખ': 'kha', 'ગ': 'ga', 'ઘ': 'gha', 'ઙ': 'nga',
+            'ચ': 'cha', 'છ': 'chha', 'જ': 'ja', 'ઝ': 'jha', 'ઞ': 'nja',
+            'ટ': 'ta', 'ઠ': 'tha', 'ડ': 'da', 'ઢ': 'dha', 'ણ': 'na',
+            'ત': 'ta', 'થ': 'tha', 'દ': 'da', 'ધ': 'dha', 'ન': 'na',
+            'પ': 'pa', 'ફ': 'pha', 'બ': 'ba', 'ભ': 'bha', 'મ': 'ma',
+            'ય': 'ya', 'ર': 'ra', 'લ': 'la', 'વ': 'va',
+            'શ': 'sha', 'ષ': 'sha', 'સ': 'sa', 'હ': 'ha',
+            '।': '.', '?': '?', '!': '!', ',': ',', ';': ';', ':': ':'
+        }
+        
+        # Common Gujarati words and their English translations
+        self.word_translations = {
+            'સમાચાર': 'news', 'ખબર': 'news', 'આજ': 'today', 'આજે': 'today',
+            'ગુજરાત': 'Gujarat', 'ભારત': 'India', 'અહીં': 'here', 'ત્યાં': 'there',
+            'લોકો': 'people', 'જનતા': 'public', 'સરકાર': 'government',
+            'મુખ્યમંત્રી': 'Chief Minister', 'પ્રધાનમંત્રી': 'Prime Minister',
+            'વર્ષ': 'year', 'મહિનો': 'month', 'દિવસ': 'day', 'સમય': 'time',
+            'પૈસા': 'money', 'રૂપિયા': 'rupees', 'હજાર': 'thousand', 
+            'લાખ': 'lakh', 'કરોડ': 'crore', 'અબજ': 'billion',
+            'શહેર': 'city', 'ગામ': 'village', 'રાજ્ય': 'state',
+            'કોર્ટ': 'court', 'ન્યાય': 'justice', 'કાયદો': 'law',
+            'પોલીસ': 'police', 'ચૂંટણી': 'election', 'પાર્ટી': 'party'
+        }
+        
+        if not self.gt:
+            logger.info("Translation service: OK (offline transliteration)")
+    
+    def _offline_translate(self, text: str) -> str:
+        """Offline translation using transliteration and word mapping"""
+        words = text.split()
+        translated_words = []
+        
+        for word in words:
+            # Check if word exists in our dictionary
+            if word in self.word_translations:
+                translated_words.append(self.word_translations[word])
+            else:
+                # Transliterate character by character
+                transliterated = ""
+                for char in word:
+                    if char in self.gujarati_to_english:
+                        transliterated += self.gujarati_to_english[char]
+                    else:
+                        transliterated += char  # Keep as is if not in mapping
+                translated_words.append(transliterated)
+        
+        result = " ".join(translated_words)
+        return f"[Transliterated] {result}"
     
     def translate(self, text: str) -> str:
-        if not self.gt:
-            return "Translation service unavailable"
+        if not text or not text.strip():
+            return "No text to translate"
+        
+        # Try online translation first
+        if self.gt:
+            try:
+                result = self.gt.translate(text)
+                return result
+            except Exception as e:
+                logger.warning(f"Online translation failed: {e}, falling back to offline method")
+        
+        # Fall back to offline translation
         try:
-            return self.gt.translate(text)
+            return self._offline_translate(text)
         except Exception as e:
             logger.error(f"Translation error: {e}")
-            return f"Translation failed: {str(e)}"
+            return f"Translation unavailable - showing original text: {text}"
 
 # Embedded summarization service
 class Summarizer:
     def __init__(self):
-        try:
-            from transformers import pipeline
-            self.summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
-            logger.info("Summarization service: OK")
-        except Exception as e:
-            logger.warning(f"Advanced summarizer failed: {e}, using simple summarizer")
-            self.summarizer = None
+        # Use simple extractive summarization - no external dependencies
+        self.summarizer = None
+        logger.info("Summarization service: OK (offline extractive method)")
     
     def summarize(self, text: str, max_length: int = 150) -> str:
         if not text.strip():
             return "No content to summarize"
         
         try:
-            if self.summarizer:
-                # Use transformer model
-                result = self.summarizer(text, max_length=max_length, min_length=30, do_sample=False)
-                return result[0]['summary_text']
-            else:
-                # Simple extractive summarization - take first few sentences
-                sentences = text.split('. ')
-                # Take first 3 sentences or up to 200 characters, whichever is shorter
-                summary_sentences = []
-                char_count = 0
-                for sentence in sentences[:5]:
-                    if char_count + len(sentence) > 200:
-                        break
-                    summary_sentences.append(sentence.strip())
-                    char_count += len(sentence)
+            # Advanced extractive summarization
+            import re
+            
+            # Clean the text first
+            text = re.sub(r'\s+', ' ', text.strip())
+            
+            # Split into sentences using multiple delimiters
+            sentences = re.split(r'[.!?।]+', text)
+            sentences = [s.strip() for s in sentences if s.strip() and len(s.strip()) > 10]
+            
+            if len(sentences) <= 2:
+                return text[:max_length] + "..." if len(text) > max_length else text
+            
+            # Score sentences based on position and length
+            scored_sentences = []
+            for i, sentence in enumerate(sentences):
+                score = 0
                 
-                return '. '.join(summary_sentences) + '.' if summary_sentences else "Unable to generate summary"
+                # Position scoring (first and last sentences are important)
+                if i == 0:
+                    score += 3  # First sentence is very important
+                elif i == len(sentences) - 1:
+                    score += 2  # Last sentence is important
+                elif i < len(sentences) // 3:
+                    score += 1  # Early sentences are somewhat important
+                
+                # Length scoring (medium length sentences are good)
+                length = len(sentence)
+                if 50 <= length <= 200:
+                    score += 2
+                elif 20 <= length <= 50:
+                    score += 1
+                
+                # Keyword scoring (simple keyword detection)
+                keywords = ['સમાચાર', 'ખબર', 'મહત્વપૂર્ણ', 'મુખ્ય', 'પ્રમુખ', 'સરકાર', 'આજે', 'news', 'important', 'main', 'today']
+                for keyword in keywords:
+                    if keyword in sentence.lower():
+                        score += 1
+                
+                scored_sentences.append((score, sentence, i))
+            
+            # Sort by score and select top sentences
+            scored_sentences.sort(key=lambda x: (-x[0], x[2]))  # Sort by score desc, then by position
+            
+            # Select sentences for summary
+            selected_sentences = []
+            total_length = 0
+            
+            for score, sentence, original_index in scored_sentences:
+                if total_length + len(sentence) <= max_length:
+                    selected_sentences.append((sentence, original_index))
+                    total_length += len(sentence)
+                if len(selected_sentences) >= 3:  # Limit to 3 sentences max
+                    break
+            
+            # Sort selected sentences by original position
+            selected_sentences.sort(key=lambda x: x[1])
+            summary_text = '. '.join([s[0] for s in selected_sentences])
+            
+            # Ensure proper ending
+            if not summary_text.endswith(('.', '!', '?', '।')):
+                summary_text += '.'
+            
+            return summary_text if summary_text else text[:max_length] + "..."
+            
         except Exception as e:
             logger.error(f"Summarization error: {e}")
-            return f"Summarization failed: {str(e)}"
+            # Fallback to simple truncation
+            return text[:max_length] + "..." if len(text) > max_length else text
 
 # Embedded URL extractor
 class URLExtractor:

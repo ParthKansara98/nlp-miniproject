@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Navigation from './components/Navigation';
 import TranslatorPage from './pages/TranslatorPage';
-import DashboardPage from './pages/DashboardPage';
 
 function App() {
   return (
@@ -14,7 +13,6 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<TranslatorPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
           </Routes>
         </main>
 
