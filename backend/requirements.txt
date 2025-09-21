@@ -1,0 +1,33 @@
+# Web Framework
+fastapi
+uvicorn[standard]
+
+# Machine Learning & NLP
+transformers
+torch
+newspaper3k
+langdetect
+
+# Database & Storage
+sqlite3
+
+# HTTP & Web
+requests
+httpx
+
+# CORS and Security
+python-multipart
+
+# Environment & Configuration
+python-dotenv
+
+# Data Processing
+pandas
+numpy
+
+# Logging
+python-json-logger
+
+# Testing (optional)
+pytest
+pytest-asyncio

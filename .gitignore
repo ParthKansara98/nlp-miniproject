@@ -1,0 +1,42 @@
+# Project gitignore
+.env
+.env.local
+.env.production
+.env.development
+
+# Docker
+.dockerignore
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# ML Models
+.cache/
+*.pkl
+*.pt
+*.pth
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Build artifacts
+dist/
+build/
